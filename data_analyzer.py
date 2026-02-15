@@ -80,7 +80,9 @@ class AutoDataAnalyzer:
             except Exception as e:
                 print(f"⚠️ {filename} 처리 실패: {e}")
 
-    async def analyze_all_staff(self, target_stocks: List[str] = None) -> List[AnalysisResult]:
+    async def analyze_all_staff(
+        self, target_stocks: List[str] = None
+    ) -> List[AnalysisResult]:
         """전 능력자 분석 실행 (비동기 AI 분석 지원)"""
         tasks = []
 
@@ -158,7 +160,10 @@ class AutoDataAnalyzer:
         if self.balance:
             combined_data += "\n### 포트폴리오 현황\n"
             for row in self.balance:
-                if row.get("종목명") in target_stocks or row.get("종목코드") in target_stocks:
+                if (
+                    row.get("종목명") in target_stocks
+                    or row.get("종목코드") in target_stocks
+                ):
                     name = row.get("종목명", row.get("종목코드"))
                     profit = row.get("수익률", "0")
                     combined_data += f"- {name}: 우리 포트폴리오 수익률 {profit}%\n"

@@ -1,7 +1,7 @@
-
 import asyncio
 import argparse
 from automation_orchestrator import AutomationOrchestrator
+
 
 async def run_scheduler(interval_hours: float, simulate: bool):
     """
@@ -24,10 +24,15 @@ async def run_scheduler(interval_hours: float, simulate: bool):
             print("🔄 1분 후 재시도합니다...")
             await asyncio.sleep(60)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="AI Advisor Periodic Scheduler")
-    parser.add_argument("--interval", type=float, default=24, help="실행 간격 (시간 단위, 기본 24시간)")
-    parser.add_argument("--simulate", action="store_true", help="시뮬레이션 모드로 실행")
+    parser.add_argument(
+        "--interval", type=float, default=24, help="실행 간격 (시간 단위, 기본 24시간)"
+    )
+    parser.add_argument(
+        "--simulate", action="store_true", help="시뮬레이션 모드로 실행"
+    )
 
     args = parser.parse_args()
 
