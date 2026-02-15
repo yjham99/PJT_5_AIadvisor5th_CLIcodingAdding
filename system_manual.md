@@ -48,25 +48,45 @@ python model_scheduler.py
 - **실패 시**: 에러 메시지가 출력되며, `.env` 파일이나 키를 확인해야 합니다.
 
 ### 4.2. 내 코드에서 사용하기
-다른 Python 스크립트에서 이 스케줄러를 불러와 사용할 수 있습니다.
+다른 Python 스크립트에서 이 스케줄러를 불러와 사용할 수 있습니다. 이 시스템은 비동기(async) 방식으로 작동하므로 `await`와 함께 사용해야 합니다.
 
 ```python
+import asyncio
 from model_scheduler import GeminiSmartScheduler
 
-# 스케줄러 초기화
-scheduler = GeminiSmartScheduler()
+async def main():
+    # 스케줄러 초기화
+    scheduler = GeminiSmartScheduler()
 
-# 질문하기
-response = scheduler.generate_content("오늘 서울 날씨 어때?")
-print(response)
+    # 질문하기
+    response = await scheduler.generate_content("오늘 서울 날씨 어때?")
+    print(response)
+
+# 비동기 실행
+asyncio.run(main())
 ```
 
 ## 5. 작동 원리 (알고리즘)
 1. 요청이 들어오면 **우선순위 1위 모델(Gemini 2.0 Flash)**부터 확인합니다.
 2. **일일 한도(RPD)**를 넘지 않았는지 체크합니다.
-3. **분당 속도(RPM)** 제한에 걸리지 않도록 필요시 잠시 대기합니다.
+3. **분당 속도(RPM)** 제한에 걸리지 않도록 필요시 잠시 대기합니다. (비동기 락 적용)
 4. 호출이 실패하거나 한부가 초과되면, 즉시 **다음 순위 모델**로 넘어갑니다.
 5. 모든 모델이 실패할 경우에만 에러를 반환합니다.
 
+## 6. 추가 자동화 모듈 (Optional)
+
+### 6.1. 키움 증권 로그인 (`kiwoom_login.py`)
+키움 증권 Open API와의 연동을 위한 로그인 모듈입니다.
+- **실행 경로**: `C:\OpenAPI\opstarter.exe` (사용자 설정에 따라 수정 가능)
+- **주요 기능**: 자동 로그인 실행 및 상태 확인
+
+### 6.2. NotebookLM 자동화 프로세스
+데이터 분석부터 NotebookLM 저장까지의 전 과정을 자동화합니다.
+- `data_analyzer.py`: 업로드된 CSV 파일을 분석하여 리포트 생성
+- `notebooklm_client.py`: 분석 결과를 NotebookLM에 비동기 일괄 저장
+- `automation_orchestrator.py`: 전체 파이프라인(로그인 -> 분석 -> 저장) 관리
+
 ---
-**주의사항**: 무료 티어는 공용 자원을 사용하므로, 간혹 예고 없이 429(Too Many Requests) 에러가 발생할 수 있습니다. 스케줄러가 이를 최대한 방어하지만, 완벽하지 않을 수 있습니다.
+**주의사항**:
+- 무료 티어는 공용 자원을 사용하므로, 간혹 예고 없이 429(Too Many Requests) 에러가 발생할 수 있습니다.
+- 키움 증권 모듈은 Windows 환경에서 정상 작동하며, Linux 환경에서는 시뮬레이션 모드로 동작합니다.
