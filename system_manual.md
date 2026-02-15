@@ -34,12 +34,19 @@
 GOOGLE_API_KEY=여러분의_API_키
 ```
 
-### 3.2. 일회성 실행 (테스트)
+### 3.2. 일회성 실행 (전체 분석)
 ```bash
 python automation_orchestrator.py
 ```
 
-### 3.3. 주기적 실행 (스케줄러 시작)
+### 3.3. 특정 종목 맞춤형 분석
+원하는 종목만 콕 집어서 AI 심층 분석을 수행할 수 있습니다. (코드 내 `target_stocks` 파라미터 사용)
+```python
+# 예시: 삼성전자와 에코프로 집중 분석
+await orchestrator.run_daily_analysis(target_stocks=["삼성전자", "에코프로"])
+```
+
+### 3.4. 주기적 실행 (스케줄러 시작)
 ```bash
 # 12시간마다 자동으로 분석 및 저장 수행
 python scheduler_service.py --interval 12

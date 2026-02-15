@@ -13,6 +13,7 @@ class NotebookLMClient:
         "트레이딩 김대리": "9bcfa6c8-318c-4799-abc7-7973bdd749aa",
         "운영 정차장": "2b10da1a-c78c-46fe-a615-3486df360976",
         "캐빈 총괄": "59b224e7-e3c3-40d8-bced-c74c437fd2be",
+        "종목 마스터": "59b224e7-e3c3-40d8-bced-c74c437fd2be",  # 캐빈 총괄 노트북 공유 또는 별도 ID 지정 가능
     }
 
     def __init__(self):

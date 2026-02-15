@@ -18,7 +18,7 @@ class AutomationOrchestrator:
         self.analyzer = AutoDataAnalyzer(upload_dir, ai_scheduler=self.ai_scheduler)
         self.notebooklm_client = NotebookLMClient()
 
-    async def run_daily_analysis(self, simulate=None):
+    async def run_daily_analysis(self, simulate=None, target_stocks: list = None):
         """일일 분석 및 저장 프로세스 실행"""
         # simulate가 None이면 윈도우가 아닐 때만 True로 설정
         if simulate is None:
@@ -54,11 +54,13 @@ class AutomationOrchestrator:
 
         # 3. 데이터 로딩 및 분석
         print("\n[Step 3] 데이터 분석 및 AI 리포트 생성 중...")
+        if target_stocks:
+            print(f"🎯 특정 종목 분석 요청됨: {', '.join(target_stocks)}")
         print("   (AI가 데이터를 심층 분석 중이므로 시간이 다소 소요될 수 있습니다.)")
         self.analyzer.load_and_clean_data(files)
 
         # 비동기 분석 실행 (await 추가)
-        results = await self.analyzer.analyze_all_staff()
+        results = await self.analyzer.analyze_all_staff(target_stocks=target_stocks)
 
         if not results:
             print(

@@ -25,10 +25,12 @@ async def mock_generate_content(*args, **kwargs):
         return "이과장 의견: 삼성전자 수익률 12.5%는 훌륭합니다. 보유 유지하세요."
     elif "김대리" in instruction:
         return "김대리 의견: 특징주인 '에코프로'는 뉴스 재료가 강력하여 단기 추세 지속이 기대됩니다."
+    elif "종목 마스터" in instruction:
+        return "종목 마스터 의견: 삼성전자와 에코프로는 각각 반도체와 2차전지의 대장주로, 현재 기관 수급과 뉴스 재료가 동시에 살아있어 분할 매수 관점이 유효합니다."
     return "AI 분석 완료."
 
 async def run_simulation():
-    print("=== [Simulation] AI Advisor Intelligence & Feature Search System ===")
+    print("=== [Simulation] AI Advisor Targeted Stock Analysis System ===")
 
     # 모킹 적용
     from model_scheduler import GeminiSmartScheduler
@@ -39,7 +41,7 @@ async def run_simulation():
     os.makedirs(test_dir, exist_ok=True)
 
     # 3. 가상 데이터 생성 (CSV)
-    print("📝 특징주 포함 가상 데이터 생성 중...")
+    print("📝 타겟 종목 포함 가상 데이터 생성 중...")
 
     # 기관 매수 데이터
     with open(os.path.join(test_dir, "20260215_기관_매수_코스피.csv"), mode='w', encoding='utf-8', newline='') as f:
@@ -58,15 +60,15 @@ async def run_simulation():
     with open(os.path.join(test_dir, "20260215_특징주_포착.csv"), mode='w', encoding='utf-8', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['종목명', '현재가', '등락률', '사유'])
-        writer.writerow(['에코프로', '150000', '15.5', '실적 서프라이즈 및 수주 뉴스'])
-        writer.writerow(['현대차', '240000', '5.2', '외국인 대량 매수'])
+        writer.writerow(['에코프로', '150000', '15.5', '실적 서프라이즈'])
 
-    # 4. 오케스트레이터 실행
+    # 4. 오케스트레이터 실행 (타겟 종목 지정)
+    target_stocks = ["삼성전자", "에코프로"]
     orchestrator = AutomationOrchestrator(test_dir)
-    success = await orchestrator.run_daily_analysis(simulate=True)
+    success = await orchestrator.run_daily_analysis(simulate=True, target_stocks=target_stocks)
 
     if success:
-        print("\n✅ 특징주 분석 포함 AI 지능형 시스템 시뮬레이션 성공!")
+        print(f"\n✅ '{', '.join(target_stocks)}' 맞춤형 AI 분석 성공!")
     else:
         print("\n❌ 시뮬레이션 과정 중 오류 발생")
 

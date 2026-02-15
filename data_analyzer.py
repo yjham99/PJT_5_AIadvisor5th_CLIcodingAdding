@@ -80,13 +80,13 @@ class AutoDataAnalyzer:
             except Exception as e:
                 print(f"⚠️ {filename} 처리 실패: {e}")
 
-    async def analyze_all_staff(self) -> List[AnalysisResult]:
+    async def analyze_all_staff(self, target_stocks: List[str] = None) -> List[AnalysisResult]:
         """전 능력자 분석 실행 (비동기 AI 분석 지원)"""
         tasks = []
 
+        # 1. 기본 전체 분석 트랙
         if self.inst_buy_kospi:
             tasks.append(self.analyze_strategy())
-            # 박차장 분석도 수급 데이터를 기반으로 하므로 추가 가능
             tasks.append(self.analyze_money_flow())
 
         if self.balance:
@@ -94,6 +94,10 @@ class AutoDataAnalyzer:
 
         if self.featured_stocks:
             tasks.append(self.analyze_featured_stocks())
+
+        # 2. 사용자 지정 특정 종목 분석 트랙 (추가)
+        if target_stocks:
+            tasks.append(self.analyze_specific_stocks(target_stocks))
 
         if not tasks:
             return []
@@ -138,6 +142,59 @@ class AutoDataAnalyzer:
         return AnalysisResult(
             staff_name=staff_name,
             analysis_type="거시 시장",
+            content=content,
+            priority=1,
+        )
+
+    async def analyze_specific_stocks(self, target_stocks: List[str]) -> AnalysisResult:
+        """종목 마스터 분석 (특정 종목 집중 분석)"""
+        staff_name = "종목 마스터"
+
+        # 모든 가용 데이터에서 타겟 종목 정보 추출
+        combined_data = f"## 타겟 분석 종목: {', '.join(target_stocks)}\n"
+        found_any = False
+
+        # 1. 잔고 데이터에서 확인
+        if self.balance:
+            combined_data += "\n### 포트폴리오 현황\n"
+            for row in self.balance:
+                if row.get("종목명") in target_stocks or row.get("종목코드") in target_stocks:
+                    name = row.get("종목명", row.get("종목코드"))
+                    profit = row.get("수익률", "0")
+                    combined_data += f"- {name}: 우리 포트폴리오 수익률 {profit}%\n"
+                    found_any = True
+
+        # 2. 기관 매수 데이터에서 확인
+        if self.inst_buy_kospi:
+            combined_data += "\n### 기관 매수 순위\n"
+            for row in self.inst_buy_kospi:
+                if row.get("종목명") in target_stocks:
+                    name = row.get("종목명")
+                    amount = row.get("순매수금액(백만)", row.get("순매수금액", "0"))
+                    combined_data += f"- {name}: 기관이 {amount}백만 순매수 중\n"
+                    found_any = True
+
+        # 3. 특징주 데이터에서 확인
+        if self.featured_stocks:
+            combined_data += "\n### 특징주 포착 이력\n"
+            for row in self.featured_stocks:
+                if row.get("종목명") in target_stocks:
+                    name = row.get("종목명")
+                    reason = row.get("사유", "특이 사항 없음")
+                    combined_data += f"- {name}: 특징주 포착 (사유: {reason})\n"
+                    found_any = True
+
+        if not found_any:
+            combined_data += "\n⚠️ 현재 데이터 파일 내에서 해당 종목의 구체적인 매매 이력을 찾을 수 없습니다. 일반적인 정보를 바탕으로 분석합니다.\n"
+
+        insight = await self._get_ai_insight(staff_name, combined_data)
+
+        content = f"# {staff_name} 특정 종목 집중 분석\n\n{insight}\n\n"
+        content += f"--- \n### 분석 대상 데이터 요약\n{combined_data}"
+
+        return AnalysisResult(
+            staff_name=staff_name,
+            analysis_type="특정 종목 분석",
             content=content,
             priority=1,
         )
